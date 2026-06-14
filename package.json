@@ -1,0 +1,23 @@
+{
+  "name": "kiro-security-rules",
+  "version": "1.0.0",
+  "description": "Kiro AI agent security steering rules — always-on security policies for enterprise teams",
+  "license": "MIT",
+  "files": [
+    "steering/",
+    "hooks/",
+    "templates/"
+  ],
+  "scripts": {
+    "postinstall": "node scripts/postinstall.js",
+    "test": "node tests/test_runner.js"
+  },
+  "bin": {
+    "kiro-security-check": "src/cli.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/your-org/kiro-steering-rules"
+  },
+  "homepage": "https://github.com/your-org/kiro-steering-rules"
+}

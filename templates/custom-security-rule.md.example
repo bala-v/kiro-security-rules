@@ -1,0 +1,75 @@
+---
+inclusion: always               # always | fileMatch | manual
+fileMatchPattern: "*.py"         # required only if inclusion: fileMatch
+description: "Brief description of this custom security rule"
+languages:
+  - python
+  - javascript
+tags:
+  - data-security
+  - authentication
+alwaysApply: true                # true = always check, false = check on tag match
+severity: HIGH                   # CRITICAL | HIGH | MEDIUM | LOW
+enforcement: BLOCK               # BLOCK (prevents action) | WARN (logs warning) | INFO (informational)
+compliance-frameworks:
+  - SOC2
+  - PCI-DSS
+  - HIPAA                        # Remove frameworks that don't apply
+---
+
+# Custom Security Rule Title
+
+## Rationale
+Explain why this rule exists — what vulnerability or compliance requirement it addresses.
+
+## Rule Details
+Specific guidance on what developers must do:
+
+- MUST statement describing the requirement
+- MUST NOT statement describing what is prohibited
+- RECOMMENDED pattern or approach
+
+## Example: Correct Implementation
+
+```python
+# CORRECT: Follows the security rule
+def handle_data(input_data):
+    # Implementation adhering to the rule
+    pass
+```
+
+## Example: Violation
+
+```python
+# VIOLATION: Does not follow the security rule
+def handle_data(input_data):
+    # This pattern is prohibited
+    pass
+```
+
+## Implementation Checklist
+- [ ] Requirement 1: Describe what to verify
+- [ ] Requirement 2: Describe what to verify
+- [ ] Requirement 3: Describe what to verify
+
+## Test Plan
+Describe how to verify this rule is followed. Include specific test scenarios:
+
+1. Happy path: input meets requirements → should succeed
+2. Violation path: input violates rule → should be flagged
+3. Edge case: boundary conditions → should be handled
+
+## Compliance Mapping
+
+| Framework | Control ID | Mapping |
+|-----------|-----------|---------|
+| SOC 2 | CC6.1 | Cryptographic controls |
+| PCI-DSS | 3.4 | Render PAN unreadable |
+| HIPAA | 164.312(a)(1) | Access control |
+
+## Remediation Guidance
+Steps to fix a violation of this rule:
+
+1. Step 1: Identify all occurrences
+2. Step 2: Apply the correction pattern
+3. Step 3: Verify fix with `kiro-security-check validate`
