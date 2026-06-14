@@ -1,0 +1,13 @@
+{
+  "name": "Verify SBOM on Push",
+  "version": "1.0.0",
+  "description": "Verify SBOM exists in SPDX format before git push operations",
+  "when": {
+    "type": "preToolUse",
+    "toolTypes": ["shell"]
+  },
+  "then": {
+    "type": "askAgent",
+    "prompt": "If the command being executed is a 'git push', 'git commit', or any command that would publish code, first verify:\n\n1. An SBOM file exists at sbom.spdx.json (or sbom/ directory for monorepos)\n2. The SBOM is in valid SPDX format (check it contains \"spdxVersion\": \"SPDX-2.3\" or later)\n3. Run dependency audit (npm audit, pip-audit, etc.) and confirm zero critical and zero high vulnerabilities\n4. No hardcoded secrets exist in the diff\n\nIf any check fails, report the issue and do NOT proceed with the command until fixed.\n\nIf the command is not a git publish command, proceed normally without additional checks."
+  }
+}

@@ -1,0 +1,27 @@
+{
+  "name": "Dependency Audit on Change",
+  "version": "1.0.0",
+  "description": "Run vulnerability audit when build/dependency files are modified",
+  "when": {
+    "type": "fileEdited",
+    "patterns": [
+      "**/package.json",
+      "**/package-lock.json",
+      "**/yarn.lock",
+      "**/pnpm-lock.yaml",
+      "**/requirements.txt",
+      "**/pyproject.toml",
+      "**/poetry.lock",
+      "**/Cargo.toml",
+      "**/Cargo.lock",
+      "**/Gemfile",
+      "**/Gemfile.lock",
+      "**/go.mod",
+      "**/go.sum"
+    ]
+  },
+  "then": {
+    "type": "runCommand",
+    "command": "echo 'Dependencies modified. Running audit...' && (npx npm-audit --audit-level=high 2>/dev/null || npx audit-ci --high 2>/dev/null || pip-audit 2>/dev/null || poetry audit 2>/dev/null || cargo audit 2>/dev/null || bundler-audit check --update 2>/dev/null || echo 'No audit tool found for this ecosystem. Manual check required.')"
+  }
+}
