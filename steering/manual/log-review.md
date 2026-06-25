@@ -1,10 +1,12 @@
 ---
-inclusion: manual
+inclusion: auto
+name: log-review
+description: Log format compliance review, PII/PHI scanning, and audit event verification. Activate when the user is writing logging code, reviewing log output, working with logging middleware, or checking for PII exposure in logs.
 ---
 
 # Log Review Workflow
 
-Activate this skill with `#log-review` to audit application logs for PII/PHI exposure and compliance with structured logging standards.
+Activate automatically when working with logging or PII, or on demand with `#log-review`, to audit application logs for PII/PHI exposure and compliance with structured logging standards.
 
 ## Review Process
 

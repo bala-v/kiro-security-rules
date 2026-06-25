@@ -1,6 +1,6 @@
 ---
 inclusion: fileMatch
-fileMatchPattern: "**/*auth*, **/*login*, **/*oauth*, **/*oidc*, **/*sso*, **/*jwt*, **/*token*, **/*session*, **/*middleware*"
+fileMatchPattern: ["**/*auth*", "**/*login*", "**/*oauth*", "**/*oidc*", "**/*sso*", "**/*jwt*", "**/*token*", "**/*session*", "**/*middleware*"]
 ---
 
 # Auth Framework Patterns

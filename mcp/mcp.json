@@ -1,0 +1,14 @@
+{
+  "mcpServers": {
+    "fetch": {
+      "command": "uvx",
+      "args": ["mcp-fetch"],
+      "description": "Fetch live web content. Use to query OWASP (https://owasp.org/Top10/), NVD (https://nvd.nist.gov/vuln/detail/CVE-XXXX-YYYY), and OSV (https://osv.dev/vulnerability/GHSA-XXXX) for current vulnerability details."
+    },
+    "aws-docs": {
+      "command": "uvx",
+      "args": ["awslabs.aws-documentation-mcp-server@latest"],
+      "description": "AWS documentation lookup. Use for AWS IAM policies, Secrets Manager, KMS, and security service guidance."
+    }
+  }
+}

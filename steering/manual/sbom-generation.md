@@ -1,10 +1,12 @@
 ---
-inclusion: manual
+inclusion: auto
+name: sbom-generation
+description: SBOM generation, validation, and update procedures. Activate when the user is adding or updating dependencies, modifying lock files, preparing a release, or asking about software bill of materials.
 ---
 
 # SBOM Generation Workflow
 
-Activate this skill with `#sbom-generation` to generate or update the project's Software Bill of Materials in SPDX format.
+Activate automatically when working with dependencies, or on demand with `#sbom-generation`, to generate or update the project's Software Bill of Materials in SPDX format.
 
 ## Prerequisites
 

@@ -1,13 +1,13 @@
 {
-  "name": "Verify SBOM on Push",
+  "name": "Validate SBOM on Modification",
   "version": "1.0.0",
-  "description": "Verify SBOM exists in SPDX format before git push operations",
+  "description": "When the SBOM file is edited, validate it meets SPDX 2.3+ format requirements",
   "when": {
-    "type": "preToolUse",
-    "toolTypes": ["shell"]
+    "type": "fileEdited",
+    "patterns": ["**/sbom.spdx.json", "**/sbom/*.spdx.json"]
   },
   "then": {
     "type": "askAgent",
-    "prompt": "If the command being executed is a 'git push', 'git commit', or any command that would publish code, first verify:\n\n1. An SBOM file exists at sbom.spdx.json (or sbom/ directory for monorepos)\n2. The SBOM is in valid SPDX format (check it contains \"spdxVersion\": \"SPDX-2.3\" or later)\n3. Run dependency audit (npm audit, pip-audit, etc.) and confirm zero critical and zero high vulnerabilities\n4. No hardcoded secrets exist in the diff\n\nIf any check fails, report the issue and do NOT proceed with the command until fixed.\n\nIf the command is not a git publish command, proceed normally without additional checks."
+    "prompt": "The SBOM file was just modified. Verify:\n1. The file contains 'spdxVersion': 'SPDX-2.3' or later\n2. A spdxId, name, dataLicense, documentNamespace, and creationInfo block are present\n3. All packages have: name, versionInfo, licenseConcluded, and supplier fields\n\nIf validation fails, report which fields are missing and suggest corrections. If valid, confirm and proceed."
   }
 }

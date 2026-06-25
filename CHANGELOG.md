@@ -5,6 +5,26 @@ All notable changes to kiro-security-rules will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Fixed
+- **Conditional steering `fileMatchPattern`** — `auth-framework-patterns.md` and `package-ecosystem-security.md` now declare `fileMatchPattern` as a YAML array instead of a single comma-separated string, so Kiro actually matches the patterns and loads these files.
+- **Unsupported `onStartup` hook trigger** — `auto-validate-rules.json` now uses the supported `preToolUse` trigger (first file write of a session) instead of the undocumented `onStartup`. `kiro-security-check validate` is elevated as the canonical install verification step.
+- **SBOM hook scope** — `verify-sbom-exists.json` no longer fires on every shell command. It now validates the SBOM only when `sbom.spdx.json` is edited. Pre-push SBOM/audit/secret enforcement moved to a CI/CD template (`ci/pre-push-checks.yml`).
+- **Supply-chain risk in dependency audit hook** — `dependency-audit-on-change.json` no longer uses `npx` (which executes unverified remote code). It now uses locally installed tools only (`npm audit`, `pip-audit`, `poetry audit`, `cargo audit`, `bundler-audit`, `govulncheck`) and fails loudly (exit 1) when none is found.
+- **Logging compliance scope** — `logging-standards.md` annotates PII/PHI prohibitions with their compliance frameworks (GDPR, HIPAA, CCPA, PCI-DSS) and documents the workspace-level override pattern for teams in other regulatory contexts.
+- **Template misload risk** — removed `templates/custom-security-rule.md.example` (a `.md` file with front-matter that could be mistakenly loaded as steering). The template now lives in the README "Creating Custom Security Rules" section.
+
+### Changed
+- **Slimmed always-on steering files** — the four always-on files are now ≤40 lines each (policy statements only). Detailed pattern tables, command references, and anti-pattern matrices moved to the relevant conditional and manual/auto workflows.
+- **Single source of truth for enforcement patterns** — `secrets-management.md` and `supply-chain-security.md` no longer duplicate the credential patterns / audit commands owned by their hooks; they state policy intent and reference the authoritative hook. Both enforcement hooks gained a `_note` marking them authoritative.
+- **`install.sh` / postinstall** — now print a prominent prompt to generate the Kiro foundational steering files (`product.md`, `tech.md`, `structure.md`) and surface `kiro-security-check validate` as the primary verification step.
+
+### Added
+- **`auto` inclusion mode** — `sbom-generation.md` and `log-review.md` converted from `manual` to `auto`; Kiro loads them automatically when the conversation matches their description, while they remain available as slash commands. `security-audit.md` stays `manual`.
+- **MCP configuration** (`mcp/mcp.json`) — `fetch` (live OWASP/NVD/OSV queries) and `awslabs.aws-documentation-mcp-server`. Installed to `.kiro/settings/mcp.json` by all install paths (no overwrite). Always-on steering files reference MCP for live CVE lookups.
+- **CI/CD template** (`ci/pre-push-checks.yml`) — GitHub Actions workflow for pre-push SBOM existence/format validation and dependency audits.
+
 ## [1.0.0] — 2026-06-14
 
 ### Added

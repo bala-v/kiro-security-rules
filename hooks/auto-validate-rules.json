@@ -1,12 +1,13 @@
 {
-  "name": "Auto-Validate Security Rules",
+  "name": "Verify Security Rules Installed",
   "version": "1.0.0",
-  "description": "Validate that all always-on security steering files are present and correctly configured on Kiro startup",
+  "description": "On the first file write of a session, verify that all required always-on security steering files are present",
   "when": {
-    "type": "onStartup"
+    "type": "preToolUse",
+    "toolTypes": ["write"]
   },
   "then": {
     "type": "askAgent",
-    "prompt": "On startup, verify that the following always-on security steering files exist in the .kiro/steering/ directory:\n\n1. secrets-management.md\n2. supply-chain-security.md\n3. authentication-standards.md\n4. logging-standards.md\n\nFor each file found, verify the frontmatter contains 'inclusion: always'.\n\nIf any file is missing or has incorrect frontmatter, report it to the user and suggest re-running: `kiro-security-check update` or `./install.sh`.\n\nIf all files are present and valid, do nothing."
+    "prompt": "Check once per session: verify that the following security steering files exist under .kiro/steering/: secrets-management.md, supply-chain-security.md, authentication-standards.md, logging-standards.md — each with 'inclusion: always' in their front-matter. If any are missing, warn the user and suggest running: kiro-security-check validate. If all are present, proceed without comment."
   }
 }

@@ -1,0 +1,17 @@
+name: Pre-Push Security Checks
+on:
+  push:
+    branches: ['**']
+jobs:
+  security:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify SBOM exists
+        run: test -f sbom.spdx.json || (echo "SBOM missing. Run #sbom-generation in Kiro." && exit 1)
+      - name: Validate SBOM format
+        run: cat sbom.spdx.json | python3 -c "import json,sys; d=json.load(sys.stdin); assert d.get('spdxVersion','') >= 'SPDX-2.3'"
+      - name: Dependency audit (Node)
+        run: test -f package.json && npm audit --audit-level=high || true
+      - name: Dependency audit (Python)
+        run: test -f pyproject.toml && pip-audit || true

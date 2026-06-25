@@ -2,7 +2,7 @@
 set -euo pipefail
 
 # Kiro Security Rules — Installer
-# Installs security steering rules, hooks, and templates into a Kiro project.
+# Installs security steering rules, hooks, and MCP config into a Kiro project.
 # Supports project-level and global installation.
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
@@ -30,9 +30,9 @@ usage() {
   echo "Components installed:"
   echo "  steering/always/      -> Always-on security policies (4 rules)"
   echo "  steering/conditional/ -> File-match triggered rules (2 rules)"
-  echo "  steering/manual/      -> On-demand audit workflows (3 workflows)"
+  echo "  steering/manual/      -> On-demand & auto audit workflows (3 workflows)"
   echo "  hooks/                -> Agent security hooks (4 hooks)"
-  echo "  templates/            -> Custom rule template"
+  echo "  mcp/mcp.json          -> MCP servers for live vuln databases (.kiro/settings/)"
 }
 
 for arg in "$@"; do
@@ -99,13 +99,17 @@ for f in "$SCRIPT_DIR/hooks/"*.json; do
   [ -f "$f" ] && copy_if_not_exists "$f" "$KIRO_DIR/hooks"
 done
 
-# Install template
+# Install MCP config (no overwrite if already exists)
 echo ""
-echo -e "${GREEN}Installing templates...${NC}"
-mkdir -p "$KIRO_DIR/../templates"
-for f in "$SCRIPT_DIR/templates/"*; do
-  [ -f "$f" ] && copy_if_not_exists "$f" "$KIRO_DIR/../templates"
-done
+echo -e "${GREEN}Installing MCP config...${NC}"
+MCP_DEST="$KIRO_DIR/settings/mcp.json"
+if [ -f "$MCP_DEST" ]; then
+  echo -e "  ${YELLOW}SKIP${NC} mcp.json (already exists at .kiro/settings/mcp.json)"
+else
+  mkdir -p "$KIRO_DIR/settings"
+  cp "$SCRIPT_DIR/mcp/mcp.json" "$MCP_DEST"
+  echo -e "  ${GREEN}COPY${NC} mcp.json -> .kiro/settings/mcp.json"
+fi
 
 # Summary
 echo ""
@@ -114,11 +118,31 @@ echo ""
 echo "Installed:"
 echo "  $(ls "$SCRIPT_DIR/steering/always/"*.md 2>/dev/null | wc -l | tr -d ' ') always-on steering rules"
 echo "  $(ls "$SCRIPT_DIR/steering/conditional/"*.md 2>/dev/null | wc -l | tr -d ' ') conditional steering rules"
-echo "  $(ls "$SCRIPT_DIR/steering/manual/"*.md 2>/dev/null | wc -l | tr -d ' ') manual steering workflows"
+echo "  $(ls "$SCRIPT_DIR/steering/manual/"*.md 2>/dev/null | wc -l | tr -d ' ') manual/auto steering workflows"
 echo "  $(ls "$SCRIPT_DIR/hooks/"*.json 2>/dev/null | wc -l | tr -d ' ') agent hooks"
 echo ""
-echo "To verify installation, run:"
-echo "  pip install -e . && kiro-security-check validate"
+echo -e "${GREEN}VERIFY INSTALLATION (primary check):${NC}"
+echo "  kiro-security-check validate"
+echo ""
+echo "  Expected output confirms all four always-on rules are present"
+echo "  with correct front-matter. (Run 'pip install -e .' first if the"
+echo "  CLI is not yet on your PATH.)"
+echo ""
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo "  NEXT STEP — Generate foundational steering files"
+echo ""
+echo "  Security rules are now installed. Kiro also needs project-"
+echo "  specific context to apply them correctly:"
+echo ""
+echo "  1. Open Kiro IDE in this project"
+echo "  2. Go to the Steering panel -> click 'Generate Steering Docs'"
+echo "  3. Select 'Foundation steering files'"
+echo "  4. Kiro will create: product.md, tech.md, structure.md"
+echo ""
+echo "  These files are project-specific and not shipped with this"
+echo "  package. Without them, security rules load without codebase"
+echo "  context. See: https://kiro.dev/docs/steering/"
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 echo ""
 echo "To check for updates regularly, add to your CI:"
 echo "  bash scripts/ci-deploy.sh --target ."

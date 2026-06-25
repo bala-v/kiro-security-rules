@@ -7,7 +7,7 @@ import pytest
 
 HOOKS_DIR = Path(__file__).resolve().parent.parent / "hooks"
 REQUIRED_HOOK_KEYS = {"name", "version", "description", "when", "then"}
-VALID_TRIGGER_TYPES = {"preToolUse", "fileEdited", "onStartup", "postTaskExecution", "userTriggered"}
+VALID_TRIGGER_TYPES = {"preToolUse", "fileEdited", "postTaskExecution", "userTriggered"}
 VALID_ACTION_TYPES = {"askAgent", "runCommand"}
 
 

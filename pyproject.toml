@@ -27,9 +27,10 @@ include = [
     "src/kiro_security/**",
     "steering/**",
     "hooks/**",
-    "templates/**",
+    "mcp/**",
+    "ci/**",
 ]
-artifacts = ["steering/**/*", "hooks/**/*", "templates/**/*"]
+artifacts = ["steering/**/*", "hooks/**/*", "mcp/**/*", "ci/**/*"]
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/kiro_security"]

@@ -4,70 +4,20 @@ inclusion: always
 
 # Supply Chain Security
 
-## Zero Critical and Zero High Vulnerabilities
+> For live CVE lookups and advisories, use the `fetch` MCP: ask Kiro to "look up CVE-YYYY-NNNNN on NVD" or "check OSV for GHSA-XXXX."
 
-The project MUST have zero critical and zero high severity known vulnerabilities across all direct and transitive dependencies.
+## Vulnerability Auditing
 
-Before adding or updating any dependency:
-1. Check vulnerability status: `npm audit`, `pip audit`, `poetry audit`, `cargo audit`, etc.
-2. If the dependency introduces critical or high CVEs, DO NOT proceed — find an alternative or file a security exception
-3. Run full audit after every dependency change
+Zero critical and zero high CVEs before any release. The dependency audit hook (`hooks/dependency-audit-on-change.json`) runs automatically on every dependency file change using your locally installed audit tool, and is the authoritative source for which audit commands run per ecosystem.
 
-## All Dependencies Declared in Build Files
+For manual audits or release checks: run `#security-audit` Phase 2 and Phase 5.
 
-Every direct and transitive dependency MUST be explicitly declared in the project's build/package manifest:
+## Dependency Declaration
 
-| Ecosystem | Build File |
-|-----------|-----------|
-| Node.js | `package.json` + `package-lock.json` or `yarn.lock` |
-| Python | `pyproject.toml` or `requirements.txt` + `poetry.lock` |
-| Rust | `Cargo.toml` + `Cargo.lock` |
-| Go | `go.mod` + `go.sum` |
-| Ruby | `Gemfile` + `Gemfile.lock` |
-| Java | `pom.xml` or `build.gradle` + lock file |
+All dependencies must be declared in build manifests with pinned versions. Lock files (`package-lock.json`, `poetry.lock`, `Cargo.lock`, `go.sum`, `Gemfile.lock`, etc.) must be committed to version control. Removing a dependency must also remove it from the build file.
 
-- Lock files MUST be committed to version control
-- NEVER install dependencies without persisting to the build file
-- Removing a dependency must also remove it from the build file
+## SBOM
 
-## SBOM Generation in SPDX Format
+An SBOM in SPDX 2.3+ format must exist at `sbom.spdx.json` (single repo) or `sbom/<component>.spdx.json` (monorepo). It must cover all direct and transitive dependencies with versions and licenses, and be regenerated whenever dependencies change.
 
-A full detailed Software Bill of Materials MUST be generated in **SPDX 2.3+ format** and stored in the repository.
-
-### Location
-
-- **Single repository**: `$REPO_ROOT/sbom.spdx.json`
-- **Monorepo**: `$REPO_ROOT/sbom/<component-name>.spdx.json`
-
-### Generation Commands
-
-```bash
-# Node.js
-npx @cyclonedx/bom --output sbom.spdx.json
-
-# Python (pip)
-pip-licenses --format=json --output-file=sbom.spdx.json
-
-# Python (poetry)
-poetry run cyclonedx-py --format spdx --output sbom.spdx.json
-
-# General
-pip install spdx-sbom-generator
-spdx-sbom-generator -p . -o sbom.spdx.json
-```
-
-### SBOM Requirements
-
-- [ ] Generated in SPDX 2.3+ format
-- [ ] Covers all direct and transitive dependencies
-- [ ] Includes version numbers for every package
-- [ ] Includes license information for every package
-- [ ] Updated whenever dependencies change
-- [ ] Validated with `spdx-validator` or equivalent tool
-
-## Mandatory Pre-Commit Checks
-
-- [ ] `npm audit` / `pip audit` / equivalent passes with zero critical and zero high findings
-- [ ] All dependencies declared in build files
-- [ ] Lock files up to date and committed
-- [ ] SBOM exists at the required path and is valid SPDX
+Run `#sbom-generation` for ecosystem-specific generation and validation steps.
