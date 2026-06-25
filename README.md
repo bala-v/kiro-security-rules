@@ -24,13 +24,18 @@ The steps below cover the **individual-developer** install. For shared-repo, MDM
 
 ### Step 0: Generate Foundational Steering Files (Required First)
 
-Before installing these security rules, open Kiro IDE in your project and generate the three foundational steering files that give Kiro project-specific context:
+Before installing these security rules, create the three foundational steering files that give Kiro project-specific context: `product.md` (the "why"), `tech.md` (the stack), and `structure.md` (the layout). These files are always-loaded and teach Kiro your tech stack and architecture. The security rules in this package build on top of that foundation — without them, the rules load without codebase context.
 
-1. Navigate to the Steering section in the Kiro panel
-2. Click **Generate Steering Docs** → **Foundation steering files**
-3. Review and save the generated `product.md`, `tech.md`, and `structure.md`
+There are two ways to create them:
 
-These files are always-loaded and teach Kiro your tech stack and architecture. The security rules in this package build on top of that foundation — without them, the rules load without codebase context. See <https://kiro.dev/docs/steering/>.
+| Path | When to use | How |
+|------|-------------|-----|
+| **Kiro IDE generator** *(recommended)* | You have Kiro IDE open on the project. The generator analyses your actual codebase, so its output is the most accurate. | Steering panel → **Generate Steering Docs** → **Foundation steering files**, then review and save. |
+| **Fill-in-the-blank templates** *(fallback)* | You are onboarding without running Kiro IDE, or want a manual starting point. | `./install.sh --with-templates /path/to/project`, then open each file and replace the `[PLACEHOLDER]` sections. |
+
+The generator is preferred because it inspects the repository; the templates in [`templates/foundational/`](templates/foundational/) are starters you fill in by hand. Both produce `product.md`, `tech.md`, and `structure.md` with `inclusion: always` front-matter in `.kiro/steering/`. See <https://kiro.dev/docs/steering/>.
+
+> The `--with-templates` flag uses a no-clobber copy, so it never overwrites foundational files you have already written.
 
 ### Step 1: Install Security Rules
 
@@ -359,6 +364,8 @@ kiro-steering-rules/
 │   ├── conditional/             # Loaded when matching files are opened
 │   └── manual/                  # On-demand (#name) and auto-included workflows
 ├── overlays/                    # Compliance overlay placeholders (PCI-DSS, HIPAA, SOX, internal-tools-lite)
+├── templates/
+│   └── foundational/            # Fill-in-the-blank product.md/tech.md/structure.md starters
 ├── hooks/                       # Kiro agent automation hooks
 ├── mcp/                         # MCP server config (-> .kiro/settings/mcp.json)
 ├── ci/                          # CI/CD templates (pre-push security checks)

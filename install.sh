@@ -7,6 +7,7 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 GLOBAL_MODE=false
+WITH_TEMPLATES=false
 TARGET_DIR=""
 
 GREEN='\033[0;32m'
@@ -19,25 +20,31 @@ usage() {
   echo "Usage: $0 [OPTIONS] [TARGET_DIR]"
   echo ""
   echo "Options:"
-  echo "  --global    Install to ~/.kiro (user-level, applies to all projects)"
-  echo "  --help      Show this help"
+  echo "  --global          Install to ~/.kiro (user-level, applies to all projects)"
+  echo "  --with-templates  Also copy foundational steering templates (product.md, tech.md,"
+  echo "                    structure.md) into .kiro/steering/. Off by default — Kiro's IDE"
+  echo "                    generator produces better, codebase-aware files. No-clobber copy."
+  echo "  --help            Show this help"
   echo ""
   echo "Examples:"
-  echo "  $0 /path/to/project     # Install into a specific project"
-  echo "  $0 .                    # Install into current directory"
-  echo "  $0 --global             # Install globally for all projects"
+  echo "  $0 /path/to/project              # Install into a specific project"
+  echo "  $0 .                             # Install into current directory"
+  echo "  $0 --global                      # Install globally for all projects"
+  echo "  $0 --with-templates .            # Install + copy foundational templates"
   echo ""
   echo "Components installed:"
-  echo "  steering/always/      -> Always-on security policies (4 rules)"
-  echo "  steering/conditional/ -> File-match triggered rules (2 rules)"
-  echo "  steering/manual/      -> On-demand & auto audit workflows (3 workflows)"
-  echo "  hooks/                -> Agent security hooks (4 hooks)"
-  echo "  mcp/mcp.json          -> MCP servers for live vuln databases (.kiro/settings/)"
+  echo "  steering/always/         -> Always-on security policies (4 rules)"
+  echo "  steering/conditional/    -> File-match triggered rules (2 rules)"
+  echo "  steering/manual/         -> On-demand & auto audit workflows (3 workflows)"
+  echo "  hooks/                   -> Agent security hooks (4 hooks)"
+  echo "  mcp/mcp.json             -> MCP servers for live vuln databases (.kiro/settings/)"
+  echo "  templates/foundational/  -> Starter product.md/tech.md/structure.md (--with-templates)"
 }
 
 for arg in "$@"; do
   case $arg in
     --global) GLOBAL_MODE=true ;;
+    --with-templates) WITH_TEMPLATES=true ;;
     --help|-h) usage; exit 0 ;;
     *) TARGET_DIR="$arg" ;;
   esac
@@ -111,6 +118,19 @@ else
   echo -e "  ${GREEN}COPY${NC} mcp.json -> .kiro/settings/mcp.json"
 fi
 
+# Optionally install foundational steering templates (opt-in via --with-templates).
+# Not copied by default: Kiro's IDE generator analyses the actual codebase and
+# produces better files than these fill-in-the-blank starters. The copy is
+# no-clobber so an existing product.md/tech.md/structure.md is never overwritten.
+if [ "$WITH_TEMPLATES" = true ]; then
+  echo ""
+  echo -e "${GREEN}Copying foundational steering templates...${NC}"
+  for f in "$SCRIPT_DIR/templates/foundational/"*.md; do
+    [ -f "$f" ] && copy_if_not_exists "$f" "$KIRO_DIR/steering"
+  done
+  echo -e "  ${GREEN}✓${NC} Templates copied. Open each file and replace [PLACEHOLDER] sections."
+fi
+
 # Summary
 echo ""
 echo -e "${GREEN}Installation complete!${NC}"
@@ -129,19 +149,30 @@ echo "  with correct front-matter. (Run 'pip install -e .' first if the"
 echo "  CLI is not yet on your PATH.)"
 echo ""
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-echo "  NEXT STEP — Generate foundational steering files"
+echo "  NEXT STEP — Foundational steering files"
 echo ""
 echo "  Security rules are now installed. Kiro also needs project-"
-echo "  specific context to apply them correctly:"
+echo "  specific context (product.md, tech.md, structure.md) to apply"
+echo "  them correctly. Without it, the rules load without codebase"
+echo "  context."
 echo ""
-echo "  1. Open Kiro IDE in this project"
-echo "  2. Go to the Steering panel -> click 'Generate Steering Docs'"
-echo "  3. Select 'Foundation steering files'"
-echo "  4. Kiro will create: product.md, tech.md, structure.md"
+if [ "$WITH_TEMPLATES" = true ]; then
+  echo "  Starter templates were copied into .kiro/steering/. Open each"
+  echo "  one and replace the [PLACEHOLDER] sections with your project's"
+  echo "  details, then delete any sections that don't apply."
+  echo ""
+  echo "  Prefer codebase-aware files? Kiro IDE -> Steering panel ->"
+  echo "  'Generate Steering Docs' analyses your repo and overwrites less."
+else
+  echo "  RECOMMENDED: Open Kiro IDE -> Steering panel -> 'Generate"
+  echo "  Steering Docs' -> 'Foundation steering files'. The generator"
+  echo "  analyses your actual codebase and produces the best results."
+  echo ""
+  echo "  ALTERNATIVE: re-run with --with-templates to copy fill-in-the-"
+  echo "  blank starter templates instead, then edit them by hand."
+fi
 echo ""
-echo "  These files are project-specific and not shipped with this"
-echo "  package. Without them, security rules load without codebase"
-echo "  context. See: https://kiro.dev/docs/steering/"
+echo "  See: https://kiro.dev/docs/steering/"
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 echo ""
 echo "To check for updates regularly, add to your CI:"
