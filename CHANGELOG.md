@@ -21,6 +21,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **`install.sh` / postinstall** — now print a prominent prompt to generate the Kiro foundational steering files (`product.md`, `tech.md`, `structure.md`) and surface `kiro-security-check validate` as the primary verification step.
 
 ### Added
+- **Team & enterprise adoption guide** (`docs/adoption-guide.md`) — covers Kiro steering distribution (global vs. workspace), three adoption tiers (individual, small team, enterprise MDM), the override model, CI/CD integration, a 4-week rollout playbook, and adoption metrics. Includes three syntax-validated MDM deployment scripts (Jamf postinstall bash, Intune PowerShell, Group Policy batch), each with SHA256 integrity verification, no-overwrite copying, and a `~/.kiro/.security-rules-version` sentinel.
+- **Compliance overlay placeholders** (`overlays/`) — `pci-dss-overlay.md`, `hipaa-overlay.md`, `sox-overlay.md`, and `internal-tools-lite.md`, each with `inclusion: always` front-matter, for layering regulatory rules on top of the baseline.
+- **CI workflow example** (`docs/examples/security-baseline.yml`) — Gitleaks full-history secret scan, lockfile-conditional dependency audits (npm/pip-audit/cargo), SBOM (SPDX 2.3+) validation, and an optional Kiro rules version gate.
+- **README Quick Start router** — restructured to route individual, small-team, and enterprise/fleet adopters to the appropriate tier in the adoption guide.
 - **`auto` inclusion mode** — `sbom-generation.md` and `log-review.md` converted from `manual` to `auto`; Kiro loads them automatically when the conversation matches their description, while they remain available as slash commands. `security-audit.md` stays `manual`.
 - **MCP configuration** (`mcp/mcp.json`) — `fetch` (live OWASP/NVD/OSV queries) and `awslabs.aws-documentation-mcp-server`. Installed to `.kiro/settings/mcp.json` by all install paths (no overwrite). Always-on steering files reference MCP for live CVE lookups.
 - **CI/CD template** (`ci/pre-push-checks.yml`) — GitHub Actions workflow for pre-push SBOM existence/format validation and dependency audits.
