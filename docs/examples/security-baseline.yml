@@ -1,0 +1,113 @@
+name: Security Baseline
+# Org-wide security gate for repositories that have adopted the Kiro security
+# steering rules. Reuse this workflow as-is or copy individual jobs into an
+# existing pipeline. See docs/adoption-guide.md §6 (CI/CD Integration).
+on:
+  push:
+    branches: ['**']
+  pull_request:
+    branches: ['**']
+
+permissions:
+  contents: read
+
+jobs:
+  secret-scan:
+    name: Secret scan (Gitleaks)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # Full history so Gitleaks can scan every commit, not just the tip.
+          fetch-depth: 0
+      - name: Run Gitleaks
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  dependency-audit:
+    name: Dependency audit
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # --- Node.js: only runs when a lockfile is present ---
+      - name: Set up Node.js
+        if: ${{ hashFiles('**/package-lock.json', '**/yarn.lock', '**/pnpm-lock.yaml') != '' }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: npm audit
+        if: ${{ hashFiles('**/package-lock.json') != '' }}
+        run: npm audit --audit-level=high
+
+      # --- Python: only runs when a lockfile/manifest is present ---
+      - name: Set up Python
+        if: ${{ hashFiles('**/requirements.txt', '**/poetry.lock', '**/pyproject.toml') != '' }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: pip-audit
+        if: ${{ hashFiles('**/requirements.txt', '**/poetry.lock', '**/pyproject.toml') != '' }}
+        run: |
+          python -m pip install --upgrade pip-audit
+          pip-audit
+
+      # --- Rust: only runs when a lockfile is present ---
+      - name: cargo audit
+        if: ${{ hashFiles('**/Cargo.lock') != '' }}
+        run: |
+          cargo install cargo-audit --locked
+          cargo audit
+
+  sbom-validation:
+    name: SBOM validation (SPDX 2.3+)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify SBOM exists and meets SPDX 2.3+
+        run: |
+          set -euo pipefail
+          sbom=""
+          if [ -f sbom.spdx.json ]; then
+            sbom="sbom.spdx.json"
+          else
+            sbom="$(ls sbom/*.spdx.json 2>/dev/null | head -n1 || true)"
+          fi
+          if [ -z "$sbom" ]; then
+            echo "SBOM missing. Expected sbom.spdx.json or sbom/*.spdx.json. Run #sbom-generation in Kiro."
+            exit 1
+          fi
+          echo "Validating $sbom"
+          python3 - "$sbom" <<'PY'
+          import json, sys
+          path = sys.argv[1]
+          with open(path) as fh:
+              doc = json.load(fh)
+          version = doc.get("spdxVersion", "")
+          assert version >= "SPDX-2.3", f"SBOM spdxVersion {version!r} is below SPDX-2.3"
+          print(f"OK: {path} is {version}")
+          PY
+
+  # Optional: prove the Kiro rules version on this machine/repo matches the
+  # required baseline. Useful as compliance evidence. Remove if unused.
+  kiro-rules-version-gate:
+    name: Kiro rules version gate (optional)
+    runs-on: ubuntu-latest
+    env:
+      REQUIRED_RULES_VERSION: '1.0.0'
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check .kiro-rules-version sentinel
+        run: |
+          set -euo pipefail
+          if [ ! -f .kiro-rules-version ]; then
+            echo "No .kiro-rules-version sentinel found. Commit one pinning the adopted rules version."
+            exit 1
+          fi
+          actual="$(tr -d '[:space:]' < .kiro-rules-version)"
+          if [ "$actual" != "$REQUIRED_RULES_VERSION" ]; then
+            echo "Kiro rules version mismatch: required $REQUIRED_RULES_VERSION, found $actual."
+            exit 1
+          fi
+          echo "OK: Kiro rules version $actual matches required baseline."

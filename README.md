@@ -10,6 +10,18 @@ Follows the steering file conventions from [everything-kiro](https://github.com/
 
 ## Quick Start
 
+**Choose your deployment path:**
+
+| Audience | What you get | Where |
+|----------|--------------|-------|
+| **Individual developer** | Self-install globally or per project (~5 min) | Steps 0–1 below |
+| **Small team** | Forked + versioned repo, onboarding one-liner, PR-gating CI (~30 min setup) | [Adoption Guide → Tier 2](docs/adoption-guide.md#3-tier-2--small-team-30-min-setup-2-min-per-dev) |
+| **Enterprise / fleet** | Global steering pushed to every machine via Jamf, Intune, or Group Policy (zero per-dev effort) | [Adoption Guide → Tier 3](docs/adoption-guide.md#4-tier-3--enterprise-mdm-12-day-setup-zero-per-dev-effort) |
+
+> **Deploying to a team or organisation?** See the [Adoption Guide](docs/adoption-guide.md) for team (shared repo), enterprise (MDM/Group Policy), CI/CD integration, and compliance overlay instructions.
+
+The steps below cover the **individual-developer** install. For shared-repo, MDM, CI/CD, and compliance-overlay deployment, follow the [Adoption Guide](docs/adoption-guide.md).
+
 ### Step 0: Generate Foundational Steering Files (Required First)
 
 Before installing these security rules, open Kiro IDE in your project and generate the three foundational steering files that give Kiro project-specific context:
@@ -346,9 +358,11 @@ kiro-steering-rules/
 │   ├── always/                  # Loaded in every Kiro conversation
 │   ├── conditional/             # Loaded when matching files are opened
 │   └── manual/                  # On-demand (#name) and auto-included workflows
+├── overlays/                    # Compliance overlay placeholders (PCI-DSS, HIPAA, SOX, internal-tools-lite)
 ├── hooks/                       # Kiro agent automation hooks
 ├── mcp/                         # MCP server config (-> .kiro/settings/mcp.json)
 ├── ci/                          # CI/CD templates (pre-push security checks)
+├── docs/                        # Adoption guide + examples (security-baseline.yml)
 ├── src/kiro_security/           # Python CLI & validator
 ├── tests/                       # Test suite
 ├── scripts/                     # Bundle and CI/CD helpers
