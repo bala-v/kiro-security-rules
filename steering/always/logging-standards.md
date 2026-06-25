@@ -4,107 +4,35 @@ inclusion: always
 
 # Logging Standards
 
+> For live compliance and logging guidance, use the `fetch` MCP: ask Kiro to "show me the OWASP logging cheat sheet."
+
 ## Structured JSON Logging
 
-All applications and sub-components MUST write logs in structured JSON format. Plain text logs are prohibited.
+All log output MUST be structured JSON. Plain-text logs are prohibited. Every entry MUST include these fields:
 
-### Required Log Format
+`timestamp` (ISO 8601 UTC), `level`, `logger`, `message`, `correlation_id`, `user_id` (when available), `action`, `resource`, `status_code`, `duration_ms`, and `environment`.
 
-Every log entry MUST contain these fields:
+## Audit Logging Required
 
-```json
-{
-  "timestamp": "2026-06-14T10:30:00.000Z",
-  "level": "INFO",
-  "logger": "com.example.auth-service",
-  "message": "User login succeeded",
-  "correlation_id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
-  "user_id": "user_abc123",
-  "action": "login",
-  "resource": "/api/v1/auth/login",
-  "status_code": 200,
-  "duration_ms": 45,
-  "source_ip": "10.0.1.42",
-  "environment": "production"
-}
-```
+Audit events MUST be logged for: authentication (login, logout, MFA, failures), authorization decisions, data mutations (create/update/delete), privilege changes, configuration changes, and other security-relevant events.
 
-### Mandatory Fields
+## PII/PHI in Logs
 
-| Field | Description | Always Required |
-|-------|-------------|:---:|
-| `timestamp` | ISO 8601 UTC | Yes |
-| `level` | DEBUG, INFO, WARN, ERROR, FATAL | Yes |
-| `logger` | Component/service name | Yes |
-| `message` | Human-readable description | Yes |
-| `correlation_id` | UUID tracing the entire request flow | Yes |
-| `user_id` | Authenticated user or system identifier | Yes (if available) |
-| `action` | The operation being performed | Yes |
-| `resource` | The endpoint or resource accessed | Yes |
-| `status_code` | HTTP status or application result code | Yes |
-| `duration_ms` | Request processing time in milliseconds | Yes |
-| `environment` | production, staging, development | Yes |
+**Prohibited in all log output** (applies regardless of compliance framework):
+- Raw passwords, tokens, secrets, or credentials
+- Full credit card numbers (PCI-DSS applies universally)
 
-### Audit Log Requirements
-
-Access and audit logs are REQUIRED for:
-- All authentication events (login, logout, MFA enroll/verify, failures)
-- All authorization decisions (grants, denials)
-- All data mutations (create, update, delete)
-- All privilege changes (role assignment, permission changes)
-- All configuration changes
-- All security-relevant events
-
-## PII and PHI Prohibited in Logs
-
-**NEVER** log personally identifiable information (PII) or protected health information (PHI).
-
-### Prohibited Fields in Logs
-
-- Email addresses
-- Social Security Numbers (SSNs)
+**Prohibited under GDPR, HIPAA, and CCPA** (applies to applications handling personal data of EU residents, US health information, or California residents):
+- Email addresses, phone numbers, physical addresses
+- Social Security Numbers, passport numbers, national IDs
 - Dates of birth
-- Phone numbers
-- Physical addresses
-- Credit card numbers
-- Medical record numbers
-- Health insurance identifiers
-- Biometric data
-- Passport or government ID numbers
-- Full names (user IDs or correlation IDs must be used instead)
+- Biometric identifiers
+- Medical record numbers, diagnosis codes, treatment information
+- Full names when combined with any of the above
 
-### Examples
+**If your application is not subject to GDPR, HIPAA, or CCPA:**
+You may override this steering file at the workspace level by creating `.kiro/steering/logging-overrides.md` with `inclusion: always`, stating which fields are permissible in your context. Workspace steering takes precedence over global steering.
 
-```javascript
-// BAD: Logging PII
-logger.info(`User ${email} logged in from IP ${ip}`);
+## Detail
 
-// GOOD: Using anonymized identifiers
-logger.info({ user_id: userId, source_ip: ip, action: "login" });
-
-// BAD: Logging request body with PII
-logger.error({ message: "Validation failed", body: req.body });
-
-// GOOD: Logging only non-sensitive fields
-logger.error({
-  action: "validation_failed",
-  field_errors: ["email", "phone"],
-  correlation_id: req.correlationId
-});
-```
-
-### Log Security Requirements
-
-- Logs must never contain raw tokens, passwords, or secrets
-- Log aggregation systems must enforce access controls
-- Log retention must comply with data protection regulations (GDPR, CCPA, HIPAA)
-- Logs must be transmitted over TLS in transit
-- Log storage must be encrypted at rest
-
-## Mandatory Pre-Commit Checks
-
-- [ ] All log statements output structured JSON
-- [ ] No PII or PHI fields in any log statement
-- [ ] No secrets or tokens logged (even masked)
-- [ ] Access and audit log events cover all required categories
-- [ ] Correlation ID plumbing exists through the request lifecycle
+Run `#log-review` for the full PII/PHI audit workflow, the remediation table, and the audit-event checklist.

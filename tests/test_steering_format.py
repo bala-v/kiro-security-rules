@@ -33,8 +33,8 @@ def test_frontmatter_has_valid_inclusion(file_path):
     parts = content.split("---", 2)
     frontmatter = yaml.safe_load(parts[1])
     assert "inclusion" in frontmatter, f"{file_path.name} missing 'inclusion' field"
-    assert frontmatter["inclusion"] in ("always", "fileMatch", "manual"), (
-        f"{file_path.name} inclusion must be 'always', 'fileMatch', or 'manual', "
+    assert frontmatter["inclusion"] in ("always", "fileMatch", "manual", "auto"), (
+        f"{file_path.name} inclusion must be 'always', 'fileMatch', 'manual', or 'auto', "
         f"got '{frontmatter['inclusion']}'"
     )
 
@@ -49,7 +49,21 @@ def test_filematch_patterns_valid(file_path):
             f"{file_path.name} has inclusion=fileMatch but no fileMatchPattern"
         )
         pattern = frontmatter["fileMatchPattern"]
-        assert isinstance(pattern, str), f"{file_path.name} fileMatchPattern must be a string"
+        # Kiro requires multiple patterns to be expressed as a YAML array;
+        # a single pattern may be a string. Reject comma-separated strings.
+        assert isinstance(pattern, (str, list)), (
+            f"{file_path.name} fileMatchPattern must be a string or list of strings"
+        )
+        if isinstance(pattern, list):
+            assert pattern, f"{file_path.name} fileMatchPattern list is empty"
+            assert all(isinstance(p, str) for p in pattern), (
+                f"{file_path.name} fileMatchPattern list must contain only strings"
+            )
+        else:
+            assert "," not in pattern, (
+                f"{file_path.name} uses a comma-separated string; "
+                f"multiple patterns must be a YAML array"
+            )
 
 
 @pytest.mark.parametrize("file_path", get_all_steering_files())

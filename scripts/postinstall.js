@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /**
  * npm postinstall script for kiro-security-rules.
- * Copies steering files, hooks, and templates to the project's .kiro/ directory.
+ * Copies steering files, hooks, and MCP config to the project's .kiro/ directory.
  */
 const fs = require("fs");
 const path = require("path");
@@ -59,5 +59,26 @@ for (const subdir of ["always", "conditional", "manual"]) {
 const srcHooks = path.join(PKG_DIR, "hooks");
 count += copyDirRecursive(srcHooks, path.join(KIRO_DIR, "hooks"));
 
+// Copy MCP config (no overwrite if already exists)
+const srcMcp = path.join(PKG_DIR, "mcp", "mcp.json");
+const settingsDir = path.join(KIRO_DIR, "settings");
+const destMcp = path.join(settingsDir, "mcp.json");
+if (fs.existsSync(srcMcp)) {
+  fs.mkdirSync(settingsDir, { recursive: true });
+  if (fs.existsSync(destMcp)) {
+    console.log("  SKIP mcp.json (already exists)");
+  } else {
+    fs.copyFileSync(srcMcp, destMcp);
+    console.log("  COPY mcp.json -> settings/mcp.json");
+    count++;
+  }
+}
+
 console.log(`\nDone. ${count} files installed to ${KIRO_DIR}`);
-console.log("Run 'kiro-security-check validate' to verify installation.");
+console.log("\nVerify installation (primary check):");
+console.log("  kiro-security-check validate");
+console.log(
+  "\n\u26a0\ufe0f  Action required: Generate Kiro foundational steering files " +
+    "(product.md, tech.md, structure.md) before using these security rules. " +
+    "See README for instructions."
+);

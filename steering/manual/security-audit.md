@@ -9,10 +9,10 @@ Activate this skill with `#security-audit` to perform a full security audit agai
 ## Audit Process
 
 ### Phase 1: Secrets Scan
-- Search entire codebase for hardcoded credential patterns (see `secrets-management.md`)
+- Search entire codebase for hardcoded credential patterns. The pre-write secret scan hook (`hooks/pre-write-secret-scan.json`) is the authoritative pattern list — it covers AWS, GitHub, Stripe, Google, Slack, JWT, private keys, and database connection strings
 - Check `.gitignore` includes `.env`, `*.key`, `*.pem`, `secrets.*`
 - Verify secrets loaded from environment variables or secrets manager
-- Check git history for accidentally committed secrets
+- Check git history for accidentally committed secrets (`git log -S 'AKIA'`, etc.)
 
 ### Phase 2: Supply Chain Audit
 - Run vulnerability audit per ecosystem (`npm audit`, `pip-audit`, `cargo audit`, etc.)

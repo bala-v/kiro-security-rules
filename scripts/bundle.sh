@@ -2,7 +2,7 @@
 set -euo pipefail
 
 # Bundle script for kiro-security-rules
-# Packages steering rules, hooks, templates, and CLI into distributable artifacts.
+# Packages steering rules, hooks, MCP config, and CI templates into distributable artifacts.
 # Output: dist/kiro-security-rules-<version>.tar.gz
 #         dist/kiro-security-rules-<version>.zip
 
@@ -31,7 +31,8 @@ mkdir -p "$STAGING_PKG"
 echo "Copying files..."
 cp -r "$REPO_ROOT/steering" "$STAGING_PKG/steering"
 cp -r "$REPO_ROOT/hooks" "$STAGING_PKG/hooks"
-cp -r "$REPO_ROOT/templates" "$STAGING_PKG/templates"
+cp -r "$REPO_ROOT/mcp" "$STAGING_PKG/mcp"
+cp -r "$REPO_ROOT/ci" "$STAGING_PKG/ci"
 cp "$REPO_ROOT/install.sh" "$STAGING_PKG/"
 cp "$REPO_ROOT/README.md" "$STAGING_PKG/"
 cp "$REPO_ROOT/CHANGELOG.md" "$STAGING_PKG/"

@@ -66,15 +66,33 @@ def cmd_update(args: argparse.Namespace) -> None:
     dest_steering.mkdir(parents=True, exist_ok=True)
     dest_hooks.mkdir(parents=True, exist_ok=True)
     count = 0
+    # Steering files are installed flat into .kiro/steering/ (matching install.sh,
+    # the npm postinstall, and the validator), regardless of their always/conditional/
+    # manual source subdirectory.
     for src_dir, dest_dir in [(src_steering, dest_steering), (src_hooks, dest_hooks)]:
         for f in src_dir.rglob("*"):
             if f.is_file():
-                rel = f.relative_to(src_dir)
-                dest_file = dest_dir / rel
+                dest_file = dest_dir / f.name
                 dest_file.parent.mkdir(parents=True, exist_ok=True)
                 dest_file.write_bytes(f.read_bytes())
                 count += 1
+    # Install MCP config without overwriting an existing project config.
+    src_mcp = pkg_root / "mcp" / "mcp.json"
+    if src_mcp.exists():
+        dest_mcp = steering_dir.parent / "settings" / "mcp.json"
+        if dest_mcp.exists():
+            print("Skipped MCP config (already exists at .kiro/settings/mcp.json)")
+        else:
+            dest_mcp.parent.mkdir(parents=True, exist_ok=True)
+            dest_mcp.write_bytes(src_mcp.read_bytes())
+            count += 1
     print(f"Updated {count} files in {dest_steering.parent}")
+    print("\nVerify installation with: kiro-security-check validate")
+    print(
+        "\nAction required: generate Kiro foundational steering files "
+        "(product.md, tech.md, structure.md) before relying on these rules. "
+        "See README for instructions."
+    )
 
 
 def cmd_audit(args: argparse.Namespace) -> None:

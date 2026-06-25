@@ -4,57 +4,29 @@ inclusion: always
 
 # Secrets Management
 
-## Hardcoded Secrets Prohibited
+> For live CVE lookups and OWASP guidance, use the `fetch` MCP: ask Kiro to "look up CVE-YYYY-NNNNN on NVD" or "show me the OWASP Top 10 entry for sensitive data exposure."
 
-NEVER hardcode secrets, credentials, API tokens, PAT (Personal Access Tokens), passwords, connection strings, or any sensitive material in source code.
+## Policy
 
-## Recognized Secret Patterns
+Never hardcode secrets. All credentials, API keys, tokens, passwords, and connection strings must come from environment variables or a secrets manager — never source code, comments, TODOs, or test fixtures. Keep `.env` files listed in `.gitignore`.
 
-Treat any value matching these patterns as a prohibited secret:
+## Prohibited Patterns
 
-- AWS access keys: `AKIA`, `AGPA`, `AIDA`, `AROA`, `ASIA` prefixed strings
-- GitHub tokens: `ghp_`, `gho_`, `ghu_`, `ghs_`, `ghr_` prefixed strings
-- Stripe keys: `sk_live_`, `pk_live_`, `sk_test_`, `pk_test_` prefixed strings
-- Google API keys: `AIza` prefixed strings
-- Slack tokens: `xoxb-`, `xoxp-`, `xapp-` prefixed strings
-- PAT tokens and any `*_PAT` suffixed variables
-- JWT tokens: three base64 segments joined by dots, starting with `eyJ`
-- Private key blocks: content between `-----BEGIN` and `-----END` markers
-- Database connection strings: `mongodb://user:pass@`, `postgres://user:pass@`, `mysql://user:pass@`, `jdbc:*`
-- Any variable named: `password`, `secret`, `api_key`, `api_secret`, `auth_token`, `access_token`, `refresh_token`, `private_key`
-- Any hardcoded string literal that looks like a randomly generated credential (high-entropy strings >20 chars near auth code)
+Never hardcode: API keys, access tokens, refresh tokens, private keys, database connection strings with credentials, or any value matching a known provider credential format.
+
+The pre-write secret scan hook (`hooks/pre-write-secret-scan.json`) is the authoritative enforcement point. It scans every file write against a comprehensive pattern list covering AWS, GitHub, Stripe, Google, Slack, JWT, and database connection strings. This steering file intentionally does not duplicate that list.
 
 ## Correct Approach
 
 ```python
 # BAD
-API_KEY = "sk_live_abc123def456"
+API_KEY = "sk_live_..."
 
 # GOOD
 import os
 API_KEY = os.environ["API_KEY"]
 ```
 
-```javascript
-// BAD
-const dbPassword = "supersecret123";
+## If a Secret Is Exposed
 
-// GOOD
-const dbPassword = process.env.DB_PASSWORD;
-```
-
-## Mandatory Checks Before Any File Write
-
-- [ ] No hardcoded credential patterns exist in the file
-- [ ] All secrets are referenced from environment variables or a secrets manager
-- [ ] `.env` files are listed in `.gitignore`
-- [ ] No secrets in comments, TODOs, or test fixtures (unless using dedicated test secrets from env)
-
-## Incident Response
-
-If a secret is found in code:
-1. STOP all work immediately
-2. Remove the secret from the file
-3. Rotate the credential at the source (AWS IAM, GitHub, secret manager, etc.)
-4. Check git history — if committed, treat as compromised and rotate
-5. Scan the repository for similar exposures
+Stop work → rotate the credential immediately at its source (AWS IAM, GitHub, secrets manager) → check git history with `git log -S 'AKIA'` → run `#security-audit` Phase 1 for a full scan including git history.

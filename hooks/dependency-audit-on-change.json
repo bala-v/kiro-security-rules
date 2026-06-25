@@ -1,4 +1,5 @@
 {
+  "_note": "This hook is the authoritative enforcement source for dependency audit commands. The steering file (supply-chain-security.md) intentionally does not duplicate this command list.",
   "name": "Dependency Audit on Change",
   "version": "1.0.0",
   "description": "Run vulnerability audit when build/dependency files are modified",
@@ -22,6 +23,6 @@
   },
   "then": {
     "type": "runCommand",
-    "command": "echo 'Dependencies modified. Running audit...' && (npx npm-audit --audit-level=high 2>/dev/null || npx audit-ci --high 2>/dev/null || pip-audit 2>/dev/null || poetry audit 2>/dev/null || cargo audit 2>/dev/null || bundler-audit check --update 2>/dev/null || echo 'No audit tool found for this ecosystem. Manual check required.')"
+    "command": "echo 'Dependency file modified — running audit...' && { npm audit --audit-level=high 2>/dev/null && echo '[npm] audit passed' ; } || { pip-audit 2>/dev/null && echo '[pip] audit passed' ; } || { poetry audit 2>/dev/null && echo '[poetry] audit passed' ; } || { cargo audit 2>/dev/null && echo '[cargo] audit passed' ; } || { bundler-audit check --update 2>/dev/null && echo '[bundler] audit passed' ; } || { govulncheck ./... 2>/dev/null && echo '[go] audit passed' ; } || { echo 'ERROR: No audit tool found. Install the appropriate tool for your ecosystem:'; echo '  Node.js  -> npm is built-in (npm audit)'; echo '  Python   -> pip install pip-audit'; echo '  Poetry   -> poetry audit (built-in)'; echo '  Rust     -> cargo install cargo-audit'; echo '  Ruby     -> gem install bundler-audit'; echo '  Go       -> go install golang.org/x/vuln/cmd/govulncheck@latest'; exit 1; }"
   }
 }

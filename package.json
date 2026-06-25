@@ -6,7 +6,8 @@
   "files": [
     "steering/",
     "hooks/",
-    "templates/"
+    "mcp/",
+    "ci/"
   ],
   "scripts": {
     "postinstall": "node scripts/postinstall.js",

@@ -1,6 +1,6 @@
 ---
 inclusion: fileMatch
-fileMatchPattern: "**/package.json, **/requirements.txt, **/poetry.lock, **/Cargo.toml, **/Cargo.lock, **/Gemfile, **/Gemfile.lock, **/go.mod, **/go.sum, **/pyproject.toml, **/pom.xml, **/build.gradle, **/yarn.lock, **/pnpm-lock.yaml"
+fileMatchPattern: ["**/package.json", "**/requirements.txt", "**/poetry.lock", "**/Cargo.toml", "**/Cargo.lock", "**/Gemfile", "**/Gemfile.lock", "**/go.mod", "**/go.sum", "**/pyproject.toml", "**/pom.xml", "**/build.gradle", "**/yarn.lock", "**/pnpm-lock.yaml"]
 ---
 
 # Package Ecosystem Security
